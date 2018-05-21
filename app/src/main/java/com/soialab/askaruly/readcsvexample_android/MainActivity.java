@@ -19,48 +19,81 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        readWeatherData();
+        readWeatherData();                  // If you need to read the whole file row by row
+        //readWeatherDataByColumn();        // If you need to read specific column row by row
     }
 
+    // Defining ordered collection as WeatherSample class
     private List<WeatherSample> weatherSamples = new ArrayList<>();
 
-    private void readWeatherData() {
+    private void readWeatherDataByColumn() {
+        // Read the raw csv file
         InputStream is = getResources().openRawResource(R.raw.data);
+
+        // Reads text from character-input stream, buffering characters for efficient reading
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+
+        // Initialization
+        String line = "";
+
+        // Handling exceptions
+        try {
+            // If buffer is not empty
+            while ((line = br.readLine()) != null) {
+                // use comma as separator columns of CSV
+                String[] cols = line.split(",");
+
+                // Print in logcat
+                System.out.println("Coulmn 0 = '" + cols[0] + "', Column 1 = '" + cols[1] + "', Column 2: '" + cols[2] + "'");
+            }
+        } catch (IOException e) {
+            // Prints throwable details
+            e.printStackTrace();
+        }
+    }
+
+    private void readWeatherData() {
+        // Read the raw csv file
+        InputStream is = getResources().openRawResource(R.raw.data);
+
+        // Reads text from character-input stream, buffering characters for efficient reading
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is, Charset.forName("UTF-8"))
         );
 
+        // Initialization
         String line = "";
+
+        // Initialization
         try {
             // Step over headers
             reader.readLine();
 
+            // If buffer is not empty
             while ((line = reader.readLine()) != null) {
                 Log.d("MyActivity","Line: " + line);
-                // Split by ','
+                // use comma as separator columns of CSV
                 String[] tokens = line.split(",");
                 // Read the data
                 WeatherSample sample = new WeatherSample();
+
+                // Setters
                 sample.setMonth(tokens[0]);
-                if (tokens[1].length() > 0) {
-                    sample.setRainfall(Double.parseDouble(tokens[1]));
-                } else {
-                    sample.setRainfall(0);
-                }
+                sample.setRainfall(Double.parseDouble(tokens[1]));
+                sample.setSumHours(Integer.parseInt(tokens[2]));
 
-                if (tokens.length >= 3 && tokens[2].length() > 0) {
-                    sample.setSumHours(Integer.parseInt(tokens[2]));
-                } else {
-                    sample.setSumHours(0);
-                }
-
+                // Adding object to a class
                 weatherSamples.add(sample);
 
+                // Log the object
                 Log.d("My Activity", "Just created: " + sample);
             }
-        } catch (IOException e) {
 
+        } catch (IOException e) {
+            // Logs error with priority level
             Log.wtf("MyActivity", "Error reading data file on line" + line, e);
+
+            // Prints throwable details
             e.printStackTrace();
         }
     }
